@@ -1,11 +1,11 @@
-// TODO: Step 6 — register in AppModule
+// TODO: Step 6 — import PackagesModule in AppModule
 import { Module } from '@nestjs/common';
 
-import { PackagesController } from './packages.controller';
+import { AdminPackagesController, MobilePackagesController } from './packages.controller';
 import { PackagesService } from './packages.service';
 
 @Module({
-  controllers: [PackagesController],
+  controllers: [AdminPackagesController, MobilePackagesController],
   providers: [PackagesService],
 })
 export class PackagesModule {}
