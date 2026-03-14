@@ -23,6 +23,16 @@ interface PackageData {
   updatedAt: string;
 }
 
+interface PaginatedData<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 function body<T>(res: request.Response): ApiResponse<T> {
   return res.body as ApiResponse<T>;
 }
@@ -84,15 +94,19 @@ describe('Packages (e2e)', () => {
 
   // ─── GET /mobile/packages ────────────────────────────────────────────────
   describe('GET /mobile/packages', () => {
-    it('should return 200 with array of packages', async () => {
+    it('should return 200 with paginated packages', async () => {
       const res = await request(server)
         .get(MOBILE_URL)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      const b = body<PackageData[]>(res);
+      const b = body<PaginatedData<PackageData>>(res);
       expect(b.success).toBe(true);
-      expect(Array.isArray(b.data)).toBe(true);
+      expect(Array.isArray(b.data.data)).toBe(true);
+      expect(b.data.meta).toHaveProperty('total');
+      expect(b.data.meta).toHaveProperty('page', 1);
+      expect(b.data.meta).toHaveProperty('limit', 10);
+      expect(b.data.meta).toHaveProperty('totalPages');
     });
 
     it('should return 401 without token', async () => {
@@ -102,15 +116,18 @@ describe('Packages (e2e)', () => {
 
   // ─── GET /admin/packages ─────────────────────────────────────────────────
   describe('GET /admin/packages', () => {
-    it('should return 200 with array of packages for ADMIN', async () => {
+    it('should return 200 with paginated packages for ADMIN', async () => {
       const res = await request(server)
         .get(ADMIN_URL)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      const b = body<PackageData[]>(res);
+      const b = body<PaginatedData<PackageData>>(res);
       expect(b.success).toBe(true);
-      expect(Array.isArray(b.data)).toBe(true);
+      expect(Array.isArray(b.data.data)).toBe(true);
+      expect(b.data.meta).toHaveProperty('total');
+      expect(b.data.meta).toHaveProperty('page', 1);
+      expect(b.data.meta).toHaveProperty('limit', 10);
     });
 
     it('should return 401 without token', async () => {

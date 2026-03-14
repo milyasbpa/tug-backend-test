@@ -65,7 +65,34 @@ All endpoints are prefixed with `/api/v1`.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/v1/mobile/packages` | Bearer | List all packages |
+| GET | `/api/v1/mobile/packages` | Bearer | List packages (paginated) |
+
+### Pagination
+
+Both list endpoints (`GET /admin/packages` and `GET /mobile/packages`) support pagination via query parameters:
+
+| Param | Type | Default | Max | Description |
+|-------|------|---------|-----|-------------|
+| `page` | integer | `1` | — | Page number (1-based) |
+| `limit` | integer | `10` | `100` | Items per page |
+
+Paginated responses have the following shape inside `data`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "data": [ { "id": "...", "name": "...", "..." } ],
+    "meta": {
+      "total": 42,
+      "page": 1,
+      "limit": 10,
+      "totalPages": 5
+    }
+  },
+  "timestamp": "2026-03-14T10:00:00.000Z"
+}
+```
 
 ### Standard Response Format
 
@@ -211,4 +238,4 @@ Use `@Public()` to opt-out, `@Roles(Role.ADMIN)` to restrict to admins.
 - Wellness packages are not soft-deleted (hard delete on `DELETE`)
 - Any authenticated user (not just ADMIN) can read packages via the mobile endpoint
 - Price is stored as `Decimal(10,2)` to avoid floating-point precision issues
-- No pagination required for the package list (dataset is expected to be small)
+- Package list endpoints are paginated (default: page 1, limit 10, max 100 per page)

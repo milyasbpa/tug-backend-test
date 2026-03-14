@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { WellnessPackage } from '@prisma/client';
 
+import { PaginationDto } from '../../common/dto/pagination.dto';
+import { PaginatedResponse } from '../../common/interfaces/paginated-response.interface';
 import { PrismaService } from '../../database/prisma.service';
 
 import { CreatePackageDto } from './dto/create-package.dto';
@@ -10,8 +12,28 @@ import { UpdatePackageDto } from './dto/update-package.dto';
 export class PackagesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(): Promise<WellnessPackage[]> {
-    return this.prisma.wellnessPackage.findMany({ orderBy: { createdAt: 'desc' } });
+  async findAll(pagination: PaginationDto): Promise<PaginatedResponse<WellnessPackage>> {
+    const { page, limit } = pagination;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.wellnessPackage.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.wellnessPackage.count(),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string): Promise<WellnessPackage> {

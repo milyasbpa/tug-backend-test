@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -8,7 +8,9 @@ import {
 } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 
+import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 import { ParseUUIDPipe } from '../../common/pipes/parse-uuid.pipe';
 
 import { CreatePackageDto } from './dto/create-package.dto';
@@ -25,9 +27,9 @@ export class AdminPackagesController {
 
   @Get()
   @ApiOperation({ summary: 'List all wellness packages' })
-  @ApiOkResponse({ type: PackageResponseDto, isArray: true })
-  findAll() {
-    return this.packagesService.findAll();
+  @ApiPaginatedResponse(PackageResponseDto)
+  findAll(@Query() pagination: PaginationDto) {
+    return this.packagesService.findAll(pagination);
   }
 
   @Post()
@@ -60,8 +62,8 @@ export class MobilePackagesController {
 
   @Get()
   @ApiOperation({ summary: 'List all available wellness packages' })
-  @ApiOkResponse({ type: PackageResponseDto, isArray: true })
-  findAll() {
-    return this.packagesService.findAll();
+  @ApiPaginatedResponse(PackageResponseDto)
+  findAll(@Query() pagination: PaginationDto) {
+    return this.packagesService.findAll(pagination);
   }
 }
