@@ -7,8 +7,8 @@ export const PackageResponseSchema = z.object({
   description: z.string(),
   price: z.number(),
   durationMinutes: z.number(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
 
 export class PackageResponseDto extends createZodDto(PackageResponseSchema) {}
