@@ -31,10 +31,19 @@ async function generate(): Promise<void> {
     .addServer('https://api.staging.example.com', 'Staging')
     .build();
 
-  const document = cleanupOpenApiDoc(SwaggerModule.createDocument(app, config));
+  const rawDocument = cleanupOpenApiDoc(SwaggerModule.createDocument(app, config));
+
+  // nestjs-zod v5 emits `exclusiveMinimum: <number>` (OpenAPI 3.1 syntax) inside
+  // a spec that declares `openapi: "3.0.0"`. Orval and other 3.0 tooling expect
+  // `exclusiveMinimum: true` paired with `minimum: <number>` (3.0 syntax).
+  // Patch via regex on the serialized JSON — no type casting needed.
+  const patchedJson = JSON.stringify(rawDocument, null, 2).replace(
+    /"exclusiveMinimum": (\d+(\.\d+)?)/g,
+    '"minimum": $1,\n            "exclusiveMinimum": true',
+  );
 
   const outPath = join(process.cwd(), 'openapi.json');
-  writeFileSync(outPath, JSON.stringify(document, null, 2));
+  writeFileSync(outPath, patchedJson);
 
   await app.close();
 
