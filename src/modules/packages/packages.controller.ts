@@ -10,11 +10,11 @@ import { Role } from '@prisma/client';
 
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { PaginationDto } from '../../common/dto/pagination.dto';
 import { ParseUUIDPipe } from '../../common/pipes/parse-uuid.pipe';
 
 import { CreatePackageDto } from './dto/create-package.dto';
 import { PackageResponseDto } from './dto/package-response.dto';
+import { QueryPackageDto } from './dto/query-package.dto';
 import { UpdatePackageDto } from './dto/update-package.dto';
 import { PackagesService } from './packages.service';
 
@@ -28,8 +28,8 @@ export class AdminPackagesController {
   @Get()
   @ApiOperation({ summary: 'List all wellness packages' })
   @ApiPaginatedResponse(PackageResponseDto)
-  findAll(@Query() pagination: PaginationDto) {
-    return this.packagesService.findAll(pagination);
+  findAll(@Query() query: QueryPackageDto) {
+    return this.packagesService.findAll(query);
   }
 
   @Post()
@@ -63,7 +63,7 @@ export class MobilePackagesController {
   @Get()
   @ApiOperation({ summary: 'List all available wellness packages' })
   @ApiPaginatedResponse(PackageResponseDto)
-  findAll(@Query() pagination: PaginationDto) {
-    return this.packagesService.findAll(pagination);
+  findAll(@Query() query: QueryPackageDto) {
+    return this.packagesService.findAll(query);
   }
 }

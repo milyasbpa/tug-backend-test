@@ -3,13 +3,18 @@ import { Test } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 
-import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PrismaService } from '../../database/prisma.service';
 import { createMockPackage } from '../../../test/helpers/mock-factories';
 
+import { QueryPackageDto } from './dto/query-package.dto';
 import { PackagesService } from './packages.service';
 
-const DEFAULT_PAGINATION = { page: 1, limit: 10 } as PaginationDto;
+const DEFAULT_QUERY = {
+  page: 1,
+  limit: 10,
+  sortBy: 'createdAt',
+  sortOrder: 'desc',
+} as unknown as QueryPackageDto;
 
 describe('PackagesService', () => {
   let service: PackagesService;
@@ -26,32 +31,83 @@ describe('PackagesService', () => {
 
   // ─── findAll ─────────────────────────────────────────────────────────────
   describe('findAll', () => {
-    it('should return a paginated response', async () => {
+    it('should return a paginated response with default sort', async () => {
       const packages = [createMockPackage(), createMockPackage()];
       prisma.wellnessPackage.findMany.mockResolvedValue(packages);
       prisma.wellnessPackage.count.mockResolvedValue(2);
 
-      const result = await service.findAll(DEFAULT_PAGINATION);
+      const result = await service.findAll(DEFAULT_QUERY);
 
       expect(result.data).toEqual(packages);
       expect(result.meta).toEqual({ total: 2, page: 1, limit: 10, totalPages: 1 });
-      expect(prisma.wellnessPackage.findMany).toHaveBeenCalledWith({
-        orderBy: { createdAt: 'desc' },
-        skip: 0,
-        take: 10,
-      });
-      expect(prisma.wellnessPackage.count).toHaveBeenCalled();
+      expect(prisma.wellnessPackage.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: undefined,
+          orderBy: { createdAt: 'desc' },
+          skip: 0,
+          take: 10,
+        }),
+      );
+      expect(prisma.wellnessPackage.count).toHaveBeenCalledWith(
+        expect.objectContaining({ where: undefined }),
+      );
     });
 
     it('should calculate skip correctly for page 2', async () => {
       prisma.wellnessPackage.findMany.mockResolvedValue([]);
       prisma.wellnessPackage.count.mockResolvedValue(25);
 
-      const result = await service.findAll({ page: 2, limit: 10 } as PaginationDto);
+      const result = await service.findAll({
+        page: 2,
+        limit: 10,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      } as unknown as QueryPackageDto);
 
       expect(result.meta.totalPages).toBe(3);
       expect(prisma.wellnessPackage.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ skip: 10, take: 10 }),
+      );
+    });
+
+    it('should build WHERE clause when search is provided', async () => {
+      const pkg = createMockPackage();
+      prisma.wellnessPackage.findMany.mockResolvedValue([pkg]);
+      prisma.wellnessPackage.count.mockResolvedValue(1);
+
+      await service.findAll({
+        page: 1,
+        limit: 10,
+        search: 'yoga',
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      } as unknown as QueryPackageDto);
+
+      expect(prisma.wellnessPackage.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            OR: [
+              { name: { contains: 'yoga', mode: 'insensitive' } },
+              { description: { contains: 'yoga', mode: 'insensitive' } },
+            ],
+          },
+        }),
+      );
+    });
+
+    it('should sort by price ascending when sortBy=price sortOrder=asc', async () => {
+      prisma.wellnessPackage.findMany.mockResolvedValue([]);
+      prisma.wellnessPackage.count.mockResolvedValue(0);
+
+      await service.findAll({
+        page: 1,
+        limit: 10,
+        sortBy: 'price',
+        sortOrder: 'asc',
+      } as unknown as QueryPackageDto);
+
+      expect(prisma.wellnessPackage.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ orderBy: { price: 'asc' } }),
       );
     });
   });

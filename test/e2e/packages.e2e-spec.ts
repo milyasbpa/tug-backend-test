@@ -109,6 +109,34 @@ describe('Packages (e2e)', () => {
       expect(b.data.meta).toHaveProperty('totalPages');
     });
 
+    it('should filter results when search param is provided', async () => {
+      const res = await request(server)
+        .get(`${MOBILE_URL}?search=E2E`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      const b = body<PaginatedData<PackageData>>(res);
+      expect(b.success).toBe(true);
+      b.data.data.forEach((pkg) => {
+        const matchesSearch =
+          pkg.name.toLowerCase().includes('e2e') || pkg.description.toLowerCase().includes('e2e');
+        expect(matchesSearch).toBe(true);
+      });
+    });
+
+    it('should sort by price ascending when sortBy=price&sortOrder=asc', async () => {
+      const res = await request(server)
+        .get(`${MOBILE_URL}?sortBy=price&sortOrder=asc`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      const b = body<PaginatedData<PackageData>>(res);
+      expect(b.success).toBe(true);
+      const prices = b.data.data.map((p) => parseFloat(p.price));
+      const sorted = [...prices].sort((a, c) => a - c);
+      expect(prices).toEqual(sorted);
+    });
+
     it('should return 401 without token', async () => {
       await request(server).get(MOBILE_URL).expect(401);
     });

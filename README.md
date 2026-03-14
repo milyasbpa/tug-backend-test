@@ -67,14 +67,17 @@ All endpoints are prefixed with `/api/v1`.
 |--------|------|------|-------------|
 | GET | `/api/v1/mobile/packages` | Bearer | List packages (paginated) |
 
-### Pagination
+### Pagination, Search & Sort
 
-Both list endpoints (`GET /admin/packages` and `GET /mobile/packages`) support pagination via query parameters:
+Both list endpoints (`GET /admin/packages` and `GET /mobile/packages`) support the following query parameters:
 
-| Param | Type | Default | Max | Description |
-|-------|------|---------|-----|-------------|
+| Param | Type | Default | Options / Max | Description |
+|-------|------|---------|---------------|-------------|
 | `page` | integer | `1` | — | Page number (1-based) |
-| `limit` | integer | `10` | `100` | Items per page |
+| `limit` | integer | `10` | max `100` | Items per page |
+| `search` | string | — | — | Case-insensitive search on `name` and `description` |
+| `sortBy` | string | `createdAt` | `name` \| `price` \| `durationMinutes` \| `createdAt` | Field to sort by |
+| `sortOrder` | string | `desc` | `asc` \| `desc` | Sort direction |
 
 Paginated responses have the following shape inside `data`:
 

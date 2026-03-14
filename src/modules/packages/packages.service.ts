@@ -1,28 +1,38 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { WellnessPackage } from '@prisma/client';
+import { Prisma, WellnessPackage } from '@prisma/client';
 
-import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PaginatedResponse } from '../../common/interfaces/paginated-response.interface';
 import { PrismaService } from '../../database/prisma.service';
 
 import { CreatePackageDto } from './dto/create-package.dto';
+import { QueryPackageDto } from './dto/query-package.dto';
 import { UpdatePackageDto } from './dto/update-package.dto';
 
 @Injectable()
 export class PackagesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(pagination: PaginationDto): Promise<PaginatedResponse<WellnessPackage>> {
-    const { page, limit } = pagination;
+  async findAll(query: QueryPackageDto): Promise<PaginatedResponse<WellnessPackage>> {
+    const { page, limit, search, sortBy, sortOrder } = query;
     const skip = (page - 1) * limit;
+
+    const where: Prisma.WellnessPackageWhereInput | undefined = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : undefined;
 
     const [data, total] = await Promise.all([
       this.prisma.wellnessPackage.findMany({
-        orderBy: { createdAt: 'desc' },
+        where,
+        orderBy: { [sortBy]: sortOrder },
         skip,
         take: limit,
       }),
-      this.prisma.wellnessPackage.count(),
+      this.prisma.wellnessPackage.count({ where }),
     ]);
 
     return {
