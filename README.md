@@ -137,8 +137,34 @@ Default admin credentials (from seed):
 npm run start:dev
 ```
 
-- Server: `http://localhost:3000`
-- Swagger: `http://localhost:3000/api/docs`
+- Server: `http://localhost:4000`
+- Swagger: `http://localhost:4000/api/docs`
+
+## Running Tests
+
+### Unit Tests
+
+```bash
+npm test
+```
+
+### E2E Tests
+
+E2E tests run against a separate test database. Set it up once before running:
+
+```bash
+# 1. Create .env.test with a dedicated test DB URL
+cp .env.example .env.test
+# Edit .env.test — set DATABASE_URL to your test database
+
+# 2. Apply migrations to test DB (run once, or after adding new migrations)
+NODE_ENV=test npx prisma migrate deploy
+
+# 3. Run E2E tests
+npm run test:e2e
+```
+
+> The E2E suite creates its own admin user during setup and cleans up created packages after each run.
 
 ## Available Scripts
 
@@ -151,7 +177,7 @@ npm run start:dev
 | `npm run format` | Format with Prettier |
 | `npm test` | Unit tests |
 | `npm run test:cov` | Unit tests with coverage |
-| `npm run test:e2e` | End-to-end tests |
+| `npm run test:e2e` | End-to-end tests (requires `.env.test`) |
 | `npm run migration:dev` | Create & apply migration |
 | `npm run migration:deploy` | Apply migrations (staging/prod) |
 | `npm run seed` | Run database seeder |
