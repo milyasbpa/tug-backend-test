@@ -11,6 +11,7 @@ import { redisConfig } from './config/redis.config';
 import { PrismaModule } from './database/prisma.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AuthModule } from './modules/auth/auth.module';
+import { PackagesModule } from './modules/packages/packages.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 
@@ -24,6 +25,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     }),
     PrismaModule,
     AuthModule,
+    PackagesModule,
   ],
   controllers: [AppController],
   providers: [
