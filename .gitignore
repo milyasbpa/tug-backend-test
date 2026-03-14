@@ -1,0 +1,35 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+
+# Dependencies
+node_modules/
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+/generated/prisma
+
+# Generated OpenAPI spec (local only — run app to regenerate)
+openapi.json
+
+# Local dev notes
+NESTJS_STARTER_KIT_TODO.md
+TUG_FS-M_Assessment.txt
