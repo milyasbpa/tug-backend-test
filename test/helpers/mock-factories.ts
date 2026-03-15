@@ -30,6 +30,14 @@ export function createMockAdminUser(overrides: Partial<User> = {}): User {
 }
 
 /**
+ * Serializes a WellnessPackage mock as the service would return it.
+ * Converts `price` from Prisma.Decimal to a plain number.
+ */
+export function serializeMockPackage(pkg: WellnessPackage) {
+  return { ...pkg, price: Number(pkg.price) };
+}
+
+/**
  * Creates a mock WellnessPackage object with optional overrides.
  */
 export function createMockPackage(overrides: Partial<WellnessPackage> = {}): WellnessPackage {

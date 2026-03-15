@@ -12,6 +12,14 @@ import { UpdatePackageDto } from './dto/update-package.dto';
 export class PackagesService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Prisma returns `Decimal` fields that serialize to strings via JSON.
+   * Convert `price` to a plain `number` before returning.
+   */
+  private serialize(pkg: WellnessPackage): WellnessPackage {
+    return { ...pkg, price: Number(pkg.price) } as unknown as WellnessPackage;
+  }
+
   async findAll(query: QueryPackageDto): Promise<PaginatedResponse<WellnessPackage>> {
     const { page, limit, search, sortBy, sortOrder } = query;
     const skip = (page - 1) * limit;
@@ -36,7 +44,7 @@ export class PackagesService {
     ]);
 
     return {
-      data,
+      data: data.map((pkg) => this.serialize(pkg)),
       meta: {
         total,
         page,
@@ -49,20 +57,23 @@ export class PackagesService {
   async findOne(id: string): Promise<WellnessPackage> {
     const pkg = await this.prisma.wellnessPackage.findUnique({ where: { id } });
     if (!pkg) throw new NotFoundException('Wellness package not found');
-    return pkg;
+    return this.serialize(pkg);
   }
 
-  create(dto: CreatePackageDto): Promise<WellnessPackage> {
-    return this.prisma.wellnessPackage.create({ data: dto });
+  async create(dto: CreatePackageDto): Promise<WellnessPackage> {
+    const pkg = await this.prisma.wellnessPackage.create({ data: dto });
+    return this.serialize(pkg);
   }
 
   async update(id: string, dto: UpdatePackageDto): Promise<WellnessPackage> {
     await this.findOne(id);
-    return this.prisma.wellnessPackage.update({ where: { id }, data: dto });
+    const pkg = await this.prisma.wellnessPackage.update({ where: { id }, data: dto });
+    return this.serialize(pkg);
   }
 
   async remove(id: string): Promise<WellnessPackage> {
     await this.findOne(id);
-    return this.prisma.wellnessPackage.delete({ where: { id } });
+    const pkg = await this.prisma.wellnessPackage.delete({ where: { id } });
+    return this.serialize(pkg);
   }
 }

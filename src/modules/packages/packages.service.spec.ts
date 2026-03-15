@@ -4,7 +4,7 @@ import { NotFoundException } from '@nestjs/common';
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 
 import { PrismaService } from '../../database/prisma.service';
-import { createMockPackage } from '../../../test/helpers/mock-factories';
+import { createMockPackage, serializeMockPackage } from '../../../test/helpers/mock-factories';
 
 import { QueryPackageDto } from './dto/query-package.dto';
 import { PackagesService } from './packages.service';
@@ -38,7 +38,7 @@ describe('PackagesService', () => {
 
       const result = await service.findAll(DEFAULT_QUERY);
 
-      expect(result.data).toEqual(packages);
+      expect(result.data).toEqual(packages.map(serializeMockPackage));
       expect(result.meta).toEqual({ total: 2, page: 1, limit: 10, totalPages: 1 });
       expect(prisma.wellnessPackage.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -120,7 +120,7 @@ describe('PackagesService', () => {
 
       const result = await service.findOne(pkg.id);
 
-      expect(result).toEqual(pkg);
+      expect(result).toEqual(serializeMockPackage(pkg));
     });
 
     it('should throw NotFoundException when package is not found', async () => {
@@ -144,7 +144,7 @@ describe('PackagesService', () => {
 
       const result = await service.create(dto);
 
-      expect(result).toEqual(pkg);
+      expect(result).toEqual(serializeMockPackage(pkg));
       expect(prisma.wellnessPackage.create).toHaveBeenCalledWith({ data: dto });
     });
   });
@@ -160,7 +160,7 @@ describe('PackagesService', () => {
 
       const result = await service.update(pkg.id, dto);
 
-      expect(result).toEqual(updated);
+      expect(result).toEqual(serializeMockPackage(updated));
     });
 
     it('should throw NotFoundException when package is not found', async () => {
@@ -181,7 +181,7 @@ describe('PackagesService', () => {
 
       const result = await service.remove(pkg.id);
 
-      expect(result).toEqual(pkg);
+      expect(result).toEqual(serializeMockPackage(pkg));
       expect(prisma.wellnessPackage.delete).toHaveBeenCalledWith({ where: { id: pkg.id } });
     });
 
