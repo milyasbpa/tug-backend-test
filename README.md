@@ -154,13 +154,13 @@ docker-compose up -d
 ```bash
 npm run migration:dev   # apply migrations
 npm run seed            # seed admin user + sample packages (skips if data exists)
-npm run seed:fresh      # delete existing packages then reseed (useful for re-init)
+npm run reseed          # delete existing packages then reseed (useful for re-init)
 ```
 
-Default admin credentials (from seed):
+Default credentials (from seed):
 
-- Email: `admin@example.com`
-- Password: `admin123`
+- Admin — `admin@example.com` / `admin123`
+- User — `user@example.com` / `user123`
 
 ### 5. Start Dev Server
 
@@ -212,7 +212,7 @@ npm run test:e2e
 | `npm run migration:dev` | Create & apply migration |
 | `npm run migration:deploy` | Apply migrations (staging/prod) |
 | `npm run seed` | Seed admin user + sample packages (skips if data exists) |
-| `npm run seed:fresh` | Delete existing packages and reseed with fresh data |
+| `npm run reseed` | Delete existing packages and reseed with fresh data |
 
 ## Authentication Flow
 
