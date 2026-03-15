@@ -246,6 +246,12 @@ npm run start:dev
 - Server: `http://localhost:4000`
 - Swagger: `http://localhost:4000/api/docs`
 
+### Swagger Preview
+
+![Swagger Overview](docs/swagger-overview.png)
+
+![Swagger Packages](docs/swagger-package.png)
+
 ## Running Tests
 
 ### Unit Tests
