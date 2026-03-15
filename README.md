@@ -153,13 +153,14 @@ docker-compose up -d
 
 ```bash
 npm run migration:dev   # apply migrations
-npm run seed            # seed admin user + sample packages
+npm run seed            # seed admin user + sample packages (skips if data exists)
+npm run seed:fresh      # delete existing packages then reseed (useful for re-init)
 ```
 
 Default admin credentials (from seed):
 
 - Email: `admin@example.com`
-- Password: `Admin1234!`
+- Password: `admin123`
 
 ### 5. Start Dev Server
 
@@ -210,12 +211,13 @@ npm run test:e2e
 | `npm run test:e2e` | End-to-end tests (requires `.env.test`) |
 | `npm run migration:dev` | Create & apply migration |
 | `npm run migration:deploy` | Apply migrations (staging/prod) |
-| `npm run seed` | Run database seeder |
+| `npm run seed` | Seed admin user + sample packages (skips if data exists) |
+| `npm run seed:fresh` | Delete existing packages and reseed with fresh data |
 
 ## Authentication Flow
 
 ```
-1. POST /auth/login  →  { accessToken (15m), refreshToken (7d) }
+1. POST /auth/login  →  { accessToken (3h), refreshToken (7d) }
 2. Use accessToken as Bearer in Authorization header
 3. When accessToken expires → POST /auth/refresh with refreshToken
 4. refreshToken hash is stored in DB — logout invalidates it

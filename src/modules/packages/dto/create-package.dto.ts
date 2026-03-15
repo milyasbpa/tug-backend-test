@@ -4,7 +4,8 @@ import { createZodDto } from 'nestjs-zod';
 export const CreatePackageSchema = z.object({
   name: z.string().trim().min(1).max(100),
   description: z.string().trim().min(1),
-  price: z.number().positive(),
+  /** Price in USD (e.g. 75.00) */
+  price: z.number().positive().describe('Price in USD'),
   durationMinutes: z.number().int().positive(),
 });
 
