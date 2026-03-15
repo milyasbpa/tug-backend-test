@@ -362,7 +362,7 @@ flowchart TD
     P4C --> P4D[Serialize price]
     P4D --> RES
 
-    RES([TransformInterceptor wraps response\n{ success, data, timestamp }])
+    RES(["TransformInterceptor wraps response: success, data, timestamp"])
 ```
 
 All endpoints are protected by `JwtAuthGuard` globally.
