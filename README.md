@@ -38,6 +38,81 @@ src/
 └── main.ts              # Bootstrap: Swagger, global pipes/filters/interceptors
 ```
 
+## System Design
+
+```mermaid
+graph TB
+    subgraph Clients["Clients"]
+        AP["Admin Portal\n(React / Next.js)\n:3000"]
+        MA["Mobile App\n(Flutter)"]
+    end
+
+    subgraph Docker["Docker Compose"]
+        PG[("PostgreSQL\n:5432")]
+    end
+
+    subgraph NestJS["NestJS Application :4000"]
+        subgraph Bootstrap["main.ts — Bootstrap"]
+            SW["Swagger UI\n/api/docs"]
+            GP["Global Prefix /api · Versioning /v1"]
+        end
+
+        subgraph GlobalStack["Global Middleware Stack"]
+            GEF["GlobalExceptionFilter"]
+            LI["LoggingInterceptor"]
+            TI["TransformInterceptor\n{ success, data, timestamp }"]
+            ZVP["ZodValidationPipe"]
+            JAG["JwtAuthGuard (global)"]
+            RG["RolesGuard (global)"]
+        end
+
+        subgraph AppModule["AppModule"]
+            subgraph ConfigModule["ConfigModule"]
+                AC["app.config.ts — Zod env validation"]
+                JC["jwt.config.ts"]
+                DC["database.config.ts"]
+            end
+
+            subgraph AuthModule["AuthModule"]
+                AuthCtrl["AuthController\n/auth/*"]
+                AuthSvc["AuthService"]
+                LS["LocalStrategy\npassport-local"]
+                JWS["JwtStrategy\npassport-jwt"]
+                JWRS["JwtRefreshStrategy"]
+            end
+
+            subgraph PackagesModule["PackagesModule"]
+                AdminCtrl["AdminPackagesController\n/admin/packages"]
+                MobileCtrl["MobilePackagesController\n/mobile/packages"]
+                PkgSvc["PackagesService"]
+            end
+
+            subgraph PrismaModule["PrismaModule (Global)"]
+                PS["PrismaService\n@prisma/adapter-pg"]
+            end
+        end
+
+        subgraph Common["Common"]
+            PUUID["ParseUUIDPipe"]
+            Decs["@CurrentUser · @Public · @Roles"]
+            BE["BusinessException"]
+        end
+    end
+
+    AP -->|"HTTP REST · Bearer Token"| NestJS
+    MA -->|"HTTP REST · Bearer Token"| NestJS
+    PS -->|"pg adapter"| PG
+
+    AuthCtrl --> AuthSvc
+    AuthSvc --> PS
+    AuthSvc --> JC
+    AdminCtrl --> PkgSvc
+    MobileCtrl --> PkgSvc
+    PkgSvc --> PS
+    JAG --> JWS
+    LS --> AuthSvc
+```
+
 ## API Design
 
 All endpoints are prefixed with `/api/v1`.
