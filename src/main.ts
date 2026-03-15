@@ -15,7 +15,6 @@ const isProduction = process.env['NODE_ENV'] === 'production';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { logger: false });
 
-  // Winston logger
   app.useLogger(
     WinstonModule.createLogger({
       transports: [
@@ -42,20 +41,15 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  // Global prefix & versioning
   app.setGlobalPrefix('api');
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
-  // Global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
 
-  // Global response transform
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  // Global Zod validation
   app.useGlobalPipes(new ZodValidationPipe());
 
-  // Swagger — non-production only
   if (process.env['NODE_ENV'] !== 'production') {
     const port = process.env['PORT'] ?? '4000';
     const config = new DocumentBuilder()
@@ -74,7 +68,6 @@ async function bootstrap(): Promise<void> {
     });
   }
 
-  // CORS — allow web frontend origins
   app.enableCors({
     origin: ['http://localhost:3000', 'http://localhost:3001'],
     credentials: true,

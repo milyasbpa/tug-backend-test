@@ -12,10 +12,6 @@ import { UpdatePackageDto } from './dto/update-package.dto';
 export class PackagesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Prisma returns `Decimal` fields that serialize to strings via JSON.
-   * Convert `price` to a plain `number` before returning.
-   */
   private serialize(pkg: WellnessPackage): WellnessPackage {
     return { ...pkg, price: Number(pkg.price) } as unknown as WellnessPackage;
   }

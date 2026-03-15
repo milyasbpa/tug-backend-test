@@ -29,7 +29,6 @@ describe('PackagesService', () => {
     prisma = module.get(PrismaService);
   });
 
-  // ─── findAll ─────────────────────────────────────────────────────────────
   describe('findAll', () => {
     it('should return a paginated response with default sort', async () => {
       const packages = [createMockPackage(), createMockPackage()];
@@ -112,7 +111,6 @@ describe('PackagesService', () => {
     });
   });
 
-  // ─── findOne ─────────────────────────────────────────────────────────────
   describe('findOne', () => {
     it('should return a single package', async () => {
       const pkg = createMockPackage();
@@ -130,7 +128,6 @@ describe('PackagesService', () => {
     });
   });
 
-  // ─── create ──────────────────────────────────────────────────────────────
   describe('create', () => {
     it('should create and return a new package', async () => {
       const pkg = createMockPackage();
@@ -149,7 +146,6 @@ describe('PackagesService', () => {
     });
   });
 
-  // ─── update ──────────────────────────────────────────────────────────────
   describe('update', () => {
     it('should update and return the package', async () => {
       const pkg = createMockPackage();
@@ -172,7 +168,6 @@ describe('PackagesService', () => {
     });
   });
 
-  // ─── remove ──────────────────────────────────────────────────────────────
   describe('remove', () => {
     it('should delete and return the deleted package', async () => {
       const pkg = createMockPackage();

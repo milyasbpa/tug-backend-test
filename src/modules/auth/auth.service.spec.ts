@@ -34,7 +34,6 @@ describe('AuthService', () => {
     configService = module.get(ConfigService);
   });
 
-  // ─── validateUser ────────────────────────────────────────────────────────
   describe('validateUser', () => {
     it('should return null when user is not found', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
@@ -66,7 +65,6 @@ describe('AuthService', () => {
     });
   });
 
-  // ─── register ────────────────────────────────────────────────────────────
   describe('register', () => {
     it('should throw ConflictException when email already exists', async () => {
       const existing = createMockUser();
@@ -88,16 +86,14 @@ describe('AuthService', () => {
       const result = await service.register({ email: newUser.email, password: 'password123' });
 
       expect(prisma.user.create).toHaveBeenCalled();
-      // verify password was hashed — the create call should NOT have plain password
       const createCallData = prisma.user.create.mock.calls[0][0].data;
       expect(createCallData.password).not.toBe('password123');
-      expect(createCallData.password).toMatch(/^\$2[ab]\$/); // bcrypt hash prefix
+      expect(createCallData.password).toMatch(/^\$2[ab]\$/);
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('refreshToken');
     });
   });
 
-  // ─── login ────────────────────────────────────────────────────────────────
   describe('login', () => {
     it('should return access and refresh tokens', async () => {
       const user = createMockUser();
@@ -113,7 +109,6 @@ describe('AuthService', () => {
     });
   });
 
-  // ─── refresh ─────────────────────────────────────────────────────────────
   describe('refresh', () => {
     it('should throw UnauthorizedException when user has no stored refresh token', async () => {
       const user = createMockUser({ refreshTokenHash: null });
@@ -150,7 +145,6 @@ describe('AuthService', () => {
     });
   });
 
-  // ─── logout ───────────────────────────────────────────────────────────────
   describe('logout', () => {
     it('should clear the refreshTokenHash', async () => {
       const user = createMockUser();
@@ -165,7 +159,6 @@ describe('AuthService', () => {
     });
   });
 
-  // ─── getProfile ───────────────────────────────────────────────────────────
   describe('getProfile', () => {
     it('should return selected user fields', async () => {
       const user = createMockUser();

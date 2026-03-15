@@ -13,7 +13,7 @@ const envSchema = z
     APP_NAME: z.string(),
     DATABASE_URL: z.string().url(),
   })
-  .passthrough(); // allow unknown env vars (JWT_SECRET, REDIS_*, etc.) to pass through
+  .passthrough();
 
 export type EnvConfig = z.infer<typeof envSchema>;
 

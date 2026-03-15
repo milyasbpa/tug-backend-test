@@ -5,7 +5,6 @@ export const PackageResponseSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   description: z.string(),
-  /** Price in USD (e.g. 75.00) */
   price: z.number().describe('Price in USD'),
   durationMinutes: z.number(),
   createdAt: z.string().datetime(),

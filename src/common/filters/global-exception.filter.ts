@@ -27,13 +27,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let code: string = ERROR_CODES.INTERNAL_ERROR;
 
     if (exception instanceof ZodValidationException) {
-      // Zod validation errors from ZodValidationPipe
       status = HttpStatus.UNPROCESSABLE_ENTITY;
       code = ERROR_CODES.VALIDATION_ERROR;
       const zodError = exception.getZodError() as ZodError;
       message = zodError.issues.map((e) => `${e.path.join('.') || 'value'}: ${e.message}`);
     } else if (exception instanceof HttpException) {
-      // NestJS HttpException (includes BusinessException)
       status = exception.getStatus();
       const exRes = exception.getResponse();
 
@@ -46,7 +44,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         code = ERROR_CODES.HTTP_EXCEPTION;
       }
     } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
-      // Prisma known errors
       if (exception.code === 'P2002') {
         status = HttpStatus.CONFLICT;
         code = ERROR_CODES.DB_UNIQUE_CONSTRAINT;
