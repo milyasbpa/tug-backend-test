@@ -10,6 +10,7 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 
+import { VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
@@ -20,14 +21,14 @@ async function generate(): Promise<void> {
   const app = await NestFactory.create(AppModule, { logger: false });
 
   app.setGlobalPrefix('api');
-  app.enableVersioning({ defaultVersion: '1' } as Parameters<typeof app.enableVersioning>[0]);
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
   const config = new DocumentBuilder()
     .setTitle(process.env['APP_NAME'] ?? 'NestJS API')
     .setDescription('API Documentation')
     .setVersion('1.0')
     .addBearerAuth()
-    .addServer('http://localhost:3000', 'Local')
+    .addServer('http://localhost:4000', 'Local')
     .addServer('https://api.staging.example.com', 'Staging')
     .build();
 

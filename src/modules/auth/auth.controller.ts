@@ -2,7 +2,6 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@n
 import {
   ApiBearerAuth,
   ApiNoContentResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -10,6 +9,7 @@ import {
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { ApiWrappedResponse } from '../../common/decorators/api-wrapped-response.decorator';
 
 import { AuthService } from './auth.service';
 import { AuthResponseDto } from './dto/auth-response.dto';
@@ -26,7 +26,7 @@ export class AuthController {
   @Public()
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
-  @ApiOkResponse({ type: AuthResponseDto })
+  @ApiWrappedResponse(AuthResponseDto)
   register(@Body() dto: RegisterDto): Promise<{ accessToken: string; refreshToken: string }> {
     return this.authService.register(dto);
   }
@@ -36,7 +36,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   @ApiOperation({ summary: 'Login with email and password' })
-  @ApiOkResponse({ type: AuthResponseDto })
+  @ApiWrappedResponse(AuthResponseDto)
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   login(
     @CurrentUser() user: { id: string; email: string; role: string },
@@ -50,7 +50,7 @@ export class AuthController {
   @Post('refresh')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
-  @ApiOkResponse({ type: AuthResponseDto })
+  @ApiWrappedResponse(AuthResponseDto)
   @ApiUnauthorizedResponse({ description: 'Invalid or expired refresh token' })
   refresh(
     @CurrentUser() user: JwtPayload & { refreshToken: string },

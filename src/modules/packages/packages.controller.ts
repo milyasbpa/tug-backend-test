@@ -1,15 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 
 import { ApiPaginatedResponse } from '../../common/decorators/api-paginated-response.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { ApiWrappedResponse } from '../../common/decorators/api-wrapped-response.decorator';
 import { ParseUUIDPipe } from '../../common/pipes/parse-uuid.pipe';
 
 import { CreatePackageDto } from './dto/create-package.dto';
@@ -34,21 +29,21 @@ export class AdminPackagesController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new wellness package' })
-  @ApiCreatedResponse({ type: PackageResponseDto })
+  @ApiWrappedResponse(PackageResponseDto, HttpStatus.CREATED)
   create(@Body() dto: CreatePackageDto) {
     return this.packagesService.create(dto);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Update a wellness package' })
-  @ApiOkResponse({ type: PackageResponseDto })
+  @ApiWrappedResponse(PackageResponseDto)
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdatePackageDto) {
     return this.packagesService.update(id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a wellness package' })
-  @ApiOkResponse({ type: PackageResponseDto })
+  @ApiWrappedResponse(PackageResponseDto)
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.packagesService.remove(id);
   }
