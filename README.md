@@ -214,13 +214,80 @@ npm run test:e2e
 | `npm run seed` | Seed admin user + sample packages (skips if data exists) |
 | `npm run reseed` | Delete existing packages and reseed with fresh data |
 
-## Authentication Flow
+## Request & Auth Flow
 
-```
-1. POST /auth/login  →  { accessToken (3h), refreshToken (7d) }
-2. Use accessToken as Bearer in Authorization header
-3. When accessToken expires → POST /auth/refresh with refreshToken
-4. refreshToken hash is stored in DB — logout invalidates it
+```mermaid
+flowchart TD
+    A([HTTP Request]) --> B[GlobalExceptionFilter]
+    B --> C[LoggingInterceptor]
+    C --> D[TransformInterceptor]
+    D --> E[ZodValidationPipe]
+    E --> F{JwtAuthGuard}
+
+    F -- "@Public() endpoint" --> G[Route Handler]
+    F -- "No / invalid token" --> F1[401 Unauthorized]
+    F -- "Valid token" --> H{RolesGuard}
+
+    H -- "No @Roles() required" --> G
+    H -- "@Roles(ADMIN), user is USER" --> H1[403 Forbidden]
+    H -- "Role matches" --> G
+
+    G --> I{Route}
+
+    I -- "POST /auth/register" --> R1[Check email duplicate]
+    R1 -- "Email exists" --> R1E[409 Conflict]
+    R1 -- "New email" --> R2[Hash password bcrypt x12]
+    R2 --> R3[Create user in DB]
+    R3 --> RT[Issue access + refresh tokens]
+
+    I -- "POST /auth/login" --> L1[LocalStrategy: validate credentials]
+    L1 -- "Invalid" --> L1E[401 Unauthorized]
+    L1 -- "Valid" --> RT
+
+    I -- "POST /auth/refresh" --> RF1[JwtRefreshGuard: verify refresh JWT]
+    RF1 -- "Invalid / expired" --> RF1E[401 Unauthorized]
+    RF1 -- "Valid" --> RF2[Compare token vs bcrypt hash in DB]
+    RF2 -- "No match" --> RF2E[401 Unauthorized]
+    RF2 -- "Match" --> RT
+
+    RT --> RT2[Hash refresh token, update DB]
+    RT2 --> RES
+
+    I -- "POST /auth/logout" --> LO1[Clear refreshTokenHash in DB]
+    LO1 --> RES
+
+    I -- "GET /auth/me" --> ME1[findUnique user by id]
+    ME1 --> RES
+
+    I -- "GET /admin/packages\nGET /mobile/packages" --> P1[PackagesService.findAll]
+    P1 --> P1A[Build WHERE search filter]
+    P1A --> P1B[Query DB with pagination + sort]
+    P1B --> P1C[Serialize Decimal price to number]
+    P1C --> RES
+
+    I -- "POST /admin/packages" --> P2[ZodValidationPipe: validate body]
+    P2 -- "Invalid" --> P2E[422 Unprocessable Entity]
+    P2 -- "Valid" --> P2A[prisma.wellnessPackage.create]
+    P2A --> P2B[Serialize price]
+    P2B --> RES
+
+    I -- "PUT /admin/packages/:id" --> P3[ParseUUIDPipe: validate id]
+    P3 -- "Invalid UUID" --> P3E[400 Bad Request]
+    P3 -- "Valid UUID" --> P3A[findOne — check exists]
+    P3A -- "Not found" --> P3B[404 Not Found]
+    P3A -- "Found" --> P3C[prisma.wellnessPackage.update]
+    P3C --> P3D[Serialize price]
+    P3D --> RES
+
+    I -- "DELETE /admin/packages/:id" --> P4[ParseUUIDPipe: validate id]
+    P4 -- "Invalid UUID" --> P4E[400 Bad Request]
+    P4 -- "Valid UUID" --> P4A[findOne — check exists]
+    P4A -- "Not found" --> P4B[404 Not Found]
+    P4A -- "Found" --> P4C[prisma.wellnessPackage.delete]
+    P4C --> P4D[Serialize price]
+    P4D --> RES
+
+    RES([TransformInterceptor wraps response\n{ success, data, timestamp }])
 ```
 
 All endpoints are protected by `JwtAuthGuard` globally.
